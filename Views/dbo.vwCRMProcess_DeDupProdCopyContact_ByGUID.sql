@@ -1,0 +1,18 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE VIEW [dbo].[vwCRMProcess_DeDupProdCopyContact_ByGUID]
+AS
+
+WITH ranking AS (SELECT SSB_CRMSYSTEM_CONTACT_ID__c, id, CreatedDate, CreatedById, ROW_NUMBER() OVER (PARTITION BY SSB_CRMSYSTEM_CONTACT_ID__c ORDER BY CreatedDate ASC) Rank
+FROM prodcopy.vw_contact
+WHERE SSB_CRMSYSTEM_CONTACT_ID__c IS NOT NULL)
+
+SELECT pca.SSB_CRMSYSTEM_CONTACT_ID__c, pca.id, pca.CreatedDate, pca.CreatedById, r.Rank
+FROM prodcopy.vw_contact pca
+INNER JOIN ranking r ON r.SSB_CRMSYSTEM_CONTACT_ID__c = pca.SSB_CRMSYSTEM_CONTACT_ID__c
+WHERE pca.SSB_CRMSYSTEM_CONTACT_ID__c IS NOT NULL
+AND r.rank = 1;
+
+GO
